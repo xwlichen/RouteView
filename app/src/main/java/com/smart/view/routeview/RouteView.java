@@ -14,6 +14,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Scroller;
 import android.widget.Toast;
@@ -27,7 +28,7 @@ import java.util.List;
  * @email : 1960003945@qq.com
  * @description :
  */
-public class RouteView extends ViewGroup {
+public class RouteView extends FrameLayout {
 
 
     private Context context;
@@ -42,8 +43,8 @@ public class RouteView extends ViewGroup {
     private int screenWidth;
     private int totalHeight;
 
-    private int itemWidth = 200;
-    int itemHeight = 150;
+    private int itemWidth = 400;
+    int itemHeight = 300;
     private int itemPadding = 50;
 
     private int routeSmallWidth = 50;
@@ -80,8 +81,8 @@ public class RouteView extends ViewGroup {
 
     private Bitmap bitmap;
 
+    private ViewGroup.LayoutParams layoutParams;
 
-    private OnScrollerListener onScrollerListener;
 
     public RouteView(Context context) {
         super(context);
@@ -101,13 +102,7 @@ public class RouteView extends ViewGroup {
     }
 
 
-    public OnScrollerListener getOnScrollerListener() {
-        return onScrollerListener;
-    }
 
-    public void setOnScrollerListener(OnScrollerListener onScrollerListener) {
-        this.onScrollerListener = onScrollerListener;
-    }
 
     protected void initAttrs(AttributeSet attrs) {
     }
@@ -129,6 +124,8 @@ public class RouteView extends ViewGroup {
 
 
         bitmap = BitmapFactory.decodeResource(context.getResources(), R.mipmap.timg);
+
+        layoutParams=new ViewGroup.LayoutParams(400,300);
     }
 
     protected void initPaint() {
@@ -186,21 +183,27 @@ public class RouteView extends ViewGroup {
         if (count == 0) {
             if (itemList != null && itemList.size() > 0) {
                 for (int i = 0; i < itemList.size(); i++) {
-                    final ImageView imageView = new ImageView(context);
-                    imageView.setImageResource(R.mipmap.ic_launcher);
-                    imageView.setScaleType(ImageView.ScaleType.FIT_XY);
-                    addView(imageView);
+                    final FlowSideView flowSideView = new FlowSideView(context);
+//                    final ImageView flowSideView = new ImageView(context);
+//                    flowSideView.setImageResource(R.mipmap.ic_launcher);
+                    flowSideView.setSize(400,300);
+                    flowSideView.setLayoutParams(layoutParams);
+                    flowSideView.setVisibility(VISIBLE);
+
+                    addView(flowSideView);
+//                    flowSideView.requestLayout();
                     int left = itemList.get(i).getLeft();
                     int top = itemList.get(i).getTop();
                     int right = itemList.get(i).getRight();
                     int bottom = itemList.get(i).getBottom();
 
-                    imageView.layout(left, top, right, bottom);
+                    flowSideView.layout(left, top, right, bottom);
 
-                    imageView.setOnClickListener(new OnClickListener() {
+
+                    flowSideView.setOnClickListener(new OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            Toast.makeText(context, "点击" + imageView.toString(), Toast.LENGTH_LONG).show();
+                            Toast.makeText(context, "点击" + flowSideView.toString(), Toast.LENGTH_LONG).show();
                         }
                     });
 
@@ -436,8 +439,8 @@ public class RouteView extends ViewGroup {
 
         }
 
-        lastY = (int) ev.getRawY();
-        lastX = (int) ev.getRawX();
+//        lastY = (int) ev.getRawY();
+//        lastX = (int) ev.getRawX();
 
     }
 
@@ -480,10 +483,6 @@ public class RouteView extends ViewGroup {
                 Log.e("smooth", "mOffset:" + mOffset);
                 int x = (int) e2.getRawX();
                 int y = (int) e2.getRawY();
-                if (onScrollerListener != null) {
-                    onScrollerListener.onScroll(x, y, lastX, lastY);
-                }
-
                 invalidate();
             }
             lastY = y;
@@ -496,9 +495,7 @@ public class RouteView extends ViewGroup {
             scroller.fling(0, (int) mOffset, 0, (int) velocityY, 0, 300, -totalHeight, 0);
             int x = (int) e2.getRawX();
             int y = (int) e2.getRawY();
-            if (onScrollerListener != null) {
-                onScrollerListener.onScroll(x, y, lastX, lastY);
-            }
+
             return true;
         }
 

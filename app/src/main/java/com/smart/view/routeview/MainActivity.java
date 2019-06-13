@@ -8,7 +8,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +29,11 @@ public class MainActivity extends AppCompatActivity {
      * 绘制的区域
      */
     private volatile Rect mRect = new Rect();
+
+    private ViewGroup.LayoutParams layoutParams;
+
+
+    private LinearLayout root;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,20 +83,18 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+//        root=findViewById(R.id.root);
+//        final FlowSideView flowSideView = new FlowSideView(this);
+//        layoutParams=new ViewGroup.LayoutParams(200,150);
+//
+//        flowSideView.setLayoutParams(layoutParams);
+//        root.addView(flowSideView);
 
 
         RouteView routeView=findViewById(R.id.routeView);
 //        routeView.setVisibility(View.GONE);
 
-        routeView.setOnScrollerListener(new OnScrollerListener() {
-            @Override
-            public void onScroll(int x, int y, int lastX, int lastY) {
-//                move(x,y,lastX,lastY);
-            }
-        });
-        ivBg=findViewById(R.id.ivBg);
-        Bitmap bm = mDecoder.decodeRegion(mRect, options);
-        ivBg.setImageBitmap(bm);
+
 
     }
 
