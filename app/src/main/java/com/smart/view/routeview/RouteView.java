@@ -1,12 +1,16 @@
 package com.smart.view.routeview;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -18,6 +22,10 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Scroller;
 import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,8 +52,10 @@ public class RouteView extends FrameLayout {
     private int totalHeight;
 
     private int itemWidth = 400;
-    int itemHeight = 300;
+    private int itemHeight = 300;
     private int itemPadding = 50;
+    private int firstTopMargin = 400;
+
 
     private int routeSmallWidth = 50;
     private int routeSmallHeight = 25;
@@ -84,6 +94,27 @@ public class RouteView extends FrameLayout {
     private ViewGroup.LayoutParams layoutParams;
 
 
+    private boolean isInit = false;
+
+    //标题
+    private Paint paintTitle;
+    private int colorTitle = Color.BLUE;
+    private int titleSize = 30;
+    private int titlePadding = 20;
+
+
+    //标签
+    private Paint paintLab;
+    private Paint paintLabText;
+    private Path tranPath;
+
+    private int colorLab = Color.BLUE;
+    private int labSize = 30;
+    private int labPadding = 20;
+
+    private int tranSize = 10;
+    RequestOptions options;
+
     public RouteView(Context context) {
         super(context);
         init(context);
@@ -100,8 +131,6 @@ public class RouteView extends FrameLayout {
         initAttrs(attrs);
         init(context);
     }
-
-
 
 
     protected void initAttrs(AttributeSet attrs) {
@@ -125,7 +154,11 @@ public class RouteView extends FrameLayout {
 
         bitmap = BitmapFactory.decodeResource(context.getResources(), R.mipmap.timg);
 
-        layoutParams=new ViewGroup.LayoutParams(400,300);
+        layoutParams = new ViewGroup.LayoutParams(400, 300);
+        options = new RequestOptions()
+                .error(R.mipmap.ic_launcher)
+                .placeholder(R.mipmap.ic_launcher)
+                .diskCacheStrategy(DiskCacheStrategy.DATA);
     }
 
     protected void initPaint() {
@@ -133,6 +166,37 @@ public class RouteView extends FrameLayout {
         paintRoute.setAntiAlias(true);
         paintRoute.setStrokeCap(Paint.Cap.ROUND);
         paintRoute.setColor(colorRoute);
+
+
+        AssetManager aManager = context.getApplicationContext().getAssets();
+        Typeface typeface = Typeface.createFromAsset(aManager, "fonts/font_65s.otf");
+
+
+        paintTitle = new Paint();
+        paintTitle.setAntiAlias(true);
+        paintTitle.setStrokeCap(Paint.Cap.ROUND);
+        paintTitle.setColor(colorTitle);
+        paintTitle.setTextSize(titleSize);
+        paintTitle.setTypeface(typeface);
+        paintTitle.setTextAlign(Paint.Align.CENTER);
+
+        paintLab = new Paint();
+        paintLab.setAntiAlias(true);
+        paintLab.setStyle(Paint.Style.FILL);
+        paintLab.setStrokeCap(Paint.Cap.ROUND);
+        paintLab.setColor(colorLab);
+        paintLab.setTextSize(labSize);
+
+        paintLabText = new Paint();
+        paintLabText.setAntiAlias(true);
+        paintLabText.setStyle(Paint.Style.FILL);
+        paintLabText.setStrokeCap(Paint.Cap.ROUND);
+        paintLabText.setColor(Color.WHITE);
+        paintLabText.setTextSize(labSize);
+        paintLabText.setTypeface(typeface);
+        paintLabText.setTextAlign(Paint.Align.CENTER);
+
+        tranPath=new Path();
 
 
     }
@@ -166,12 +230,6 @@ public class RouteView extends FrameLayout {
         width = measure(widthMeasureSpec);
         height = measure(heightMeasureSpec);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        Log.e("xw", "width:" + width + "height:" + height);
-
-        if (height > 0) {
-            initItemPosition();
-
-        }
 
 
     }
@@ -182,23 +240,28 @@ public class RouteView extends FrameLayout {
         int count = getChildCount();
         if (count == 0) {
             if (itemList != null && itemList.size() > 0) {
+                if (!isInit) {
+                    initItemPosition();
+                }
+
                 for (int i = 0; i < itemList.size(); i++) {
                     final FlowSideView flowSideView = new FlowSideView(context);
 //                    final ImageView flowSideView = new ImageView(context);
 //                    flowSideView.setImageResource(R.mipmap.ic_launcher);
-                    flowSideView.setSize(400,300);
+                    flowSideView.setSize(400, 300,itemList.get(i));
                     flowSideView.setLayoutParams(layoutParams);
                     flowSideView.setVisibility(VISIBLE);
 
+
                     addView(flowSideView);
-//                    flowSideView.requestLayout();
-                    int left = itemList.get(i).getLeft();
-                    int top = itemList.get(i).getTop();
-                    int right = itemList.get(i).getRight();
-                    int bottom = itemList.get(i).getBottom();
+
+                    int left = itemList.get(i).getItemLeft();
+                    int top = itemList.get(i).getItemTop();
+                    int right = itemList.get(i).getItemRight();
+                    int bottom = itemList.get(i).getItemBottom();
 
                     flowSideView.layout(left, top, right, bottom);
-
+                    Glide.with(context).load(itemList.get(i).getImgUrl()).apply(options).into(flowSideView);
 
                     flowSideView.setOnClickListener(new OnClickListener() {
                         @Override
@@ -224,7 +287,6 @@ public class RouteView extends FrameLayout {
             return;
         }
 
-//        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);//绘制透明色
 
 //        canvas.save();
         if (mOffset < 0) {
@@ -232,10 +294,52 @@ public class RouteView extends FrameLayout {
         }
 
         canvas.drawBitmap(bitmap, 0, 0, null);
-
+        if (totalHeight>bitmap.getHeight()){
+            canvas.drawBitmap(bitmap, 0, bitmap.getHeight(), null);
+        }
         canvas.drawLine(width / 2, 0, width / 2, height, paintRoute);
 
-        drawRoute(canvas);
+        if (itemList != null && itemList.size() > 0) {
+            if (!isInit) {
+                initItemPosition();
+            }
+//            drawRoute(canvas);
+
+            for (int i = 0; i < itemList.size(); i++) {
+
+
+                //绘制标题
+                canvas.drawText(itemList.get(i).getTitle(),
+                        itemList.get(i).getTitleLeft(),
+                        itemList.get(i).getTitleTop(),
+                        paintTitle);
+
+
+                //绘制label
+                if (itemList.get(i).isLearning()) {
+                    int rectLeft = itemList.get(i).getLabRectLeft();
+                    int rectBottom = itemList.get(i).getLabRectBottom();
+                    int rectRight =itemList.get(i).getLabRectRight();
+                    int rectTop =itemList.get(i).getLabRectTop();
+
+
+                    canvas.drawRoundRect(new RectF(rectLeft, rectTop, rectRight, rectBottom), 25, 25, paintLab);
+                    tranPath.moveTo(itemList.get(i).getLabTranDot1()[0],itemList.get(i).getLabTranDot1()[1]);
+                    tranPath.lineTo(itemList.get(i).getLabTranDot2()[0],itemList.get(i).getLabTranDot2()[1]);
+                    tranPath.lineTo(itemList.get(i).getLabTranDot3()[0],itemList.get(i).getLabTranDot3()[1]);
+                    canvas.drawPath(tranPath,paintLab);
+
+
+                    canvas.drawText("学到这",
+                            itemList.get(i).getLabTextLeft(),
+                            itemList.get(i).getLabTextTop(),
+                            paintLabText);
+
+
+                }
+
+            }
+        }
 
 //        canvas.restore();
 
@@ -250,12 +354,11 @@ public class RouteView extends FrameLayout {
         if (routeList != null && routeList.size() > 0) {
             for (int i = 0; i < routeList.size(); i++) {
 
-                int left = routeList.get(i).getLeft();
-                int top = routeList.get(i).getTop();
-                int right = routeList.get(i).getRight();
-                int bottom = routeList.get(i).getBottom();
+                int left = routeList.get(i).getItemLeft();
+                int top = routeList.get(i).getItemTop();
+                int right = routeList.get(i).getItemRight();
+                int bottom = routeList.get(i).getItemBottom();
 
-//                Log.e("xw","left:"+left+" ,top:"+right+" ,right:"+right+" ,bottom:"+bottom);
 
 //                RectF rectF = new RectF(left, top, right, bottom);
 //                canvas.drawOval(rectF, paintRoute);
@@ -270,85 +373,109 @@ public class RouteView extends FrameLayout {
         if (itemList == null) {
             itemList = new ArrayList<>();
         }
-        itemList.clear();
-        int lRight = width / 2;
+        int lRight = width / 2 - itemPadding;
         int lLeft = lRight - itemWidth;
-        int rLeft = width / 2;
+        int rLeft = width / 2 + itemPadding;
         int rRight = rLeft + itemWidth;
 
 
-        int route1UpBottom = height / 2;
-        int route1UpTop = route1UpBottom - routeSmallHeight;
-        int route1DownTop = height / 2;
-        int route1DownBottom = route1DownTop + routeSmallHeight;
+        for (int i = 0; i < itemList.size(); i++) {
+            RouteBean itemBean = itemList.get(i);
+            itemBean.setItemTop(2 * i * itemPadding + i * itemHeight + firstTopMargin);
+            itemBean.setItemBottom(itemBean.getItemTop() + itemHeight);
 
-
-        int route2UpBottom = route1UpTop;
-        int route2UpTop = route2UpBottom - routeBigHeight;
-        int route2DownTop = route1DownBottom;
-        int route2DownBottom = route2DownTop + routeBigHeight;
-
-
-        if (routeList == null) {
-            routeList = new ArrayList<>();
-        }
-        routeList.clear();
-
-
-        for (int i = 0; i < 30; i++) {
-            RouteBean itemBean = new RouteBean();
-            itemBean.setTop(2 * i * itemPadding + i * itemHeight);
-            itemBean.setBottom(itemBean.getTop() + itemHeight);
-
-//            RouteBean routeBean1 = new RouteBean();
-//            routeBean1.setLeft(itemBean.getRight());
-//            routeBean1.setRight(routeBean1.getLeft() + routeSmallWidth);
-//
-//            RouteBean routeBean2 = new RouteBean();
-//            routeBean2.setLeft(routeBean1.getLeft() + routePadding);
-//            routeBean2.setRight(routeBean2.getLeft() + routeBigWidth);
 
             if (i % 2 == 0) {
-                itemBean.setLeft(lLeft);
-                itemBean.setRight(lRight);
-
-//                routeBean1.setTop(route1DownTop);
-//                routeBean1.setBottom(route1DownBottom);
-
-//                routeBean2.setTop(route2DownTop);
-//                routeBean2.setBottom(route2DownBottom);
+                itemBean.setItemLeft(lLeft);
+                itemBean.setItemRight(lRight);
 
 
             } else {
-                itemBean.setLeft(rLeft);
-                itemBean.setRight(rRight);
-
-//                routeBean1.setTop(route1UpTop);
-//                routeBean1.setBottom(route1UpBottom);
-//
-//                routeBean2.setTop(route2UpTop);
-//                routeBean2.setBottom(route2UpBottom);
+                itemBean.setItemLeft(rLeft);
+                itemBean.setItemRight(rRight);
 
 
             }
+            setTitleXY(itemBean);
+            if (itemBean.isLearning()) {
+                setLabPosition(itemBean);
+            }
 
-            itemList.add(itemBean);
-//            routeList.add(routeBean1);
-//            routeList.add(routeBean2);
 
         }
+
+        isInit = true;
 
     }
 
-    private void initRoutPosition() {
-        if (routeList == null) {
-            routeList = new ArrayList<>();
-        }
-        routeList.clear();
-        for (int i = 0; i < 10; i++) {
-            RouteBean bean = new RouteBean();
 
-        }
+    protected void setTitleXY(RouteBean itemBean) {
+        Rect rect = new Rect();
+        paintTitle.getTextBounds(itemBean.getTitle(), 0, itemBean.getTitle().length(), rect);
+        int textWidth = rect.width();
+        int textHeight = rect.height();
+
+        int rectLeft = itemBean.getItemLeft();
+        int rectTop = itemBean.getItemBottom();
+        int rectRight = itemBean.getItemRight();
+        int rectBottom = rectTop + textHeight + titlePadding * 2;
+
+
+        int rectX = (rectLeft + rectRight) / 2;
+        int rectY = (rectTop + rectBottom) / 2;
+
+
+        //计算baseline
+        Paint.FontMetrics fontMetrics = paintTitle.getFontMetrics();
+        float distance = (fontMetrics.bottom - fontMetrics.top) / 2 - fontMetrics.bottom;
+        float baseline = rectY + distance;
+
+        itemBean.setTitleLeft(rectX);
+        itemBean.setTitleTop((int) baseline);
+    }
+
+
+    protected void setLabPosition(RouteBean itemBean) {
+
+
+        Rect rect = new Rect();
+        paintLabText.getTextBounds("学到这", 0, "学到这".length(), rect);
+        int textWidth = rect.width();
+        int textHeight = rect.height();
+
+        int rectX = (itemBean.getItemLeft() + itemBean.getItemRight()) / 2;
+
+        int rectLeft = rectX - textWidth / 2 - labPadding * 2;
+        int rectBottom = itemBean.getItemTop() -tranSize - labPadding;
+        int rectRight = rectX +textWidth / 2 + labPadding * 2;
+        int rectTop = rectBottom - textHeight - labPadding * 2;
+
+
+        int rectY = (rectTop + rectBottom) / 2;
+
+        //计算baseline
+        Paint.FontMetrics fontMetrics = paintTitle.getFontMetrics();
+        float distance = (fontMetrics.bottom - fontMetrics.top) / 2 - fontMetrics.bottom;
+        float baseline = rectY + distance;
+
+        itemBean.setLabTextLeft(rectX);
+        itemBean.setLabTextTop((int) baseline);
+
+
+        itemBean.setLabRectLeft(rectLeft);
+        itemBean.setLabRectTop(rectTop);
+        itemBean.setLabRectRight(rectRight);
+        itemBean.setLabRectBottom(rectBottom);
+
+        int[] do1 = {rectX, rectBottom + tranSize};
+        int[] do2 = {rectX - tranSize / 2, rectBottom};
+        int[] do3 = {rectX + tranSize / 2, rectBottom};
+
+
+        itemBean.setLabTranDot1(do1);
+        itemBean.setLabTranDot2(do2);
+        itemBean.setLabTranDot3(do3);
+
 
     }
 
@@ -384,6 +511,8 @@ public class RouteView extends FrameLayout {
                 mInitialMotionY = mLastMotionY;
 
                 mIsBeingDragged = false;
+                y = (int) ev.getRawY();
+                x = (int) ev.getRawX();
                 break;
 
             case MotionEvent.ACTION_MOVE:
@@ -464,8 +593,8 @@ public class RouteView extends FrameLayout {
     private GestureDetector.SimpleOnGestureListener mSimpleOnGestureListener = new GestureDetector.SimpleOnGestureListener() {
         @Override
         public boolean onDown(MotionEvent e) {
-            y = (int) e.getRawY();
-            x = (int) e.getRawX();
+//            y = (int) e.getRawY();
+//            x = (int) e.getRawX();
             scroller.forceFinished(true);
             invalidate();
             return true;
@@ -477,7 +606,7 @@ public class RouteView extends FrameLayout {
             if (distance * distanceY <= 0) {
                 mOffset += -distanceY;
                 mOffset = Math.min(mOffset, 0);
-                mOffset = Math.max(mOffset, -totalHeight);
+                mOffset = Math.max(mOffset, -totalHeight+screenHeight);
                 Log.e("smooth", "distanceY:" + distanceY);
                 Log.e("smooth", "dY:" + distance);
                 Log.e("smooth", "mOffset:" + mOffset);
@@ -492,7 +621,7 @@ public class RouteView extends FrameLayout {
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            scroller.fling(0, (int) mOffset, 0, (int) velocityY, 0, 300, -totalHeight, 0);
+            scroller.fling(0, (int) mOffset, 0, (int) velocityY, 0, 300, -totalHeight+screenHeight, 0);
             int x = (int) e2.getRawX();
             int y = (int) e2.getRawY();
 
@@ -501,6 +630,41 @@ public class RouteView extends FrameLayout {
 
 
     };
+
+
+    public void setData(List<RouteBean> itemList) {
+        itemList = new ArrayList<>();
+        for (int i = 0; i < 30; i++) {
+            RouteBean routeBean = new RouteBean();
+            if (i == 0) {
+
+                routeBean.setLearning(true);
+                routeBean.setFree(true);
+
+            } else if (i == 4) {
+                routeBean.setFree(true);
+            }
+
+            routeBean.setTitle(i + "");
+            itemList.add(routeBean);
+
+            String url1="https://staticcdn.changguwen.com/cms/img/2019123/779a9469-a011-454f-a445-f0b5c764223c-1548229753383.jpg";
+            String url2="https://staticcdn.changguwen.com/cms/img/2018111/42aa7020-98ec-4ab3-923a-d122a84c4e1d-1541040921320.jpg";
+            if(i%2==0){
+                routeBean.setImgUrl(url1);
+            }else{
+                routeBean.setImgUrl(url2);
+
+            }
+
+        }
+
+        this.itemList = itemList;
+
+        invalidate();
+        requestLayout();
+
+    }
 
 
 }

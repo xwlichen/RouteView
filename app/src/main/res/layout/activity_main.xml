@@ -38,8 +38,16 @@
     <!--</LinearLayout>-->
     <!--</HorizontalScrollView>-->
 
-    <!--<com.smart.view.routeview.FlowSideView-->
-        <!--android:layout_width="200dp"-->
-        <!--android:layout_height="150dp"/>-->
+    <com.smart.view.routeview.FlowSideView
+        android:id="@+id/flowSizeView"
+        android:layout_width="200dp"
+        android:layout_height="150dp"
+        android:visibility="gone"/>
+
+    <ImageView
+        android:id="@+id/ivView"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:visibility="gone"/>
 
 </LinearLayout>

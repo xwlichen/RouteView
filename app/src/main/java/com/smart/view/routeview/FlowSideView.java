@@ -13,10 +13,21 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.transition.Transition;
 
 /**
  * @date : 2019-06-13 10:26
@@ -24,7 +35,7 @@ import android.view.View;
  * @email : 1960003945@qq.com
  * @description :
  */
-public class FlowSideView extends View {
+public class FlowSideView extends AppCompatImageView {
     private Context context;
     private int width;
     private int height;
@@ -58,6 +69,10 @@ public class FlowSideView extends View {
     private Bitmap tagBitmap;
     private int tagWidth;
     private int tagHeight;
+
+    private RouteBean routeBean;
+
+    RequestOptions options;
 
 
     public FlowSideView(Context context) {
@@ -99,8 +114,11 @@ public class FlowSideView extends View {
         computeRectPadding("试听");
 
         tagBitmap = BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_green_circle_true);
-        tagWidth=tagBitmap.getWidth();
-        tagHeight=tagBitmap.getHeight();
+        tagWidth = tagBitmap.getWidth();
+        tagHeight = tagBitmap.getHeight();
+
+        options = new RequestOptions()
+                .diskCacheStrategy(DiskCacheStrategy.DATA);
 
 
     }
@@ -133,13 +151,13 @@ public class FlowSideView extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         Log.e("flow", "onMeasure");
 
-        if (width<=0) {
+        if (width <= 0) {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
             Log.e("flow", "width:" + width + "height:" + height);
             width = measure(widthMeasureSpec);
             height = measure(heightMeasureSpec);
-        }else{
-            setMeasuredDimension(width,height);
+        } else {
+            setMeasuredDimension(width, height);
         }
 
 //        bgBitmap = getBitmap(BitmapFactory.decodeResource(context.getResources(), R.mipmap.test), width, height);
@@ -151,13 +169,21 @@ public class FlowSideView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if (width > 0&&bgBitmap!=null) {
+        if (width > 0) {
             drawBigBound(canvas);
             canvas.saveLayerAlpha(0, 0, getWidth(), getHeight(), 255, Canvas.ALL_SAVE_FLAG);
             paint.setColor(Color.RED);
             drawCutBound(canvas);
             paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-            canvas.drawBitmap(bgBitmap, 0, 0, paint);
+//            if (bgBitmap != null) {
+//                canvas.drawBitmap(bgBitmap, 0, 0, paint);
+//            }
+            Drawable drawable=getDrawable();
+            if (drawable != null) {
+                if (drawable instanceof BitmapDrawable){
+                    canvas.drawBitmap(getBitmap(((BitmapDrawable) drawable).getBitmap(),width,height), 0, 0, paint);
+                }
+            }
             paint.setXfermode(null);
 
             paint.setColor(Color.BLUE);
@@ -166,7 +192,7 @@ public class FlowSideView extends View {
             paint.setColor(Color.WHITE);
             canvas.drawText("试听", rectX, baseline, paint);
 
-            canvas.drawBitmap(tagBitmap,width-tagWidth,height-tagHeight,null);
+            canvas.drawBitmap(tagBitmap, width - tagWidth, height - tagHeight, null);
 
         }
     }
@@ -200,10 +226,10 @@ public class FlowSideView extends View {
         matrix.postScale(wS, hS);//这块就是处理缩放的比例
         //matrix.setScale(sX,sY);//缩放图片的质量sX表示宽0.5就代表缩放一半,sX同样
 
-        Bitmap bitmapResult = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);//创建一个新的图像
-        bitmap.recycle();
+        bitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height, matrix, true);//创建一个新的图像
+//        bitmap.recycle();
 
-        return bitmapResult;
+        return bitmap;
     }
 
     private void computeRectPadding(String str) {
@@ -229,14 +255,27 @@ public class FlowSideView extends View {
     }
 
 
-    public void setSize(int width,int height){
-        this.width=width;
-        this.height=height;
-        bgBitmap = getBitmap(BitmapFactory.decodeResource(context.getResources(), R.mipmap.test), width, height);
+    public void setSize(int width, int height, final RouteBean bean) {
+        this.width = width;
+        this.height = height;
+        this.routeBean = bean;
 
         requestLayout();
         Log.e("flow", "setSize");
 
-//        invalidate();
+//        Glide.with(context).asBitmap()//强制Glide返回一个Bitmap对象
+//                .load(bean.getImgUrl())
+//                .apply(options)
+//                .into(new SimpleTarget<Bitmap>() {
+//                    @Override
+//                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+//                        bgBitmap = resource;
+//                        Log.e("xw", "url:" + bean.getImgUrl());
+////                        requestLayout();
+//                    }
+//                });
+
+
+        invalidate();
     }
 }

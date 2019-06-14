@@ -172,10 +172,10 @@ public class RouteView1 extends ViewGroup {
                     imageView.setImageResource(R.mipmap.ic_launcher);
                     imageView.setScaleType(ImageView.ScaleType.FIT_XY);
                     addView(imageView);
-                    int left = itemList.get(i).getLeft();
-                    int top = itemList.get(i).getTop();
-                    int right = itemList.get(i).getRight();
-                    int bottom = itemList.get(i).getBottom();
+                    int left = itemList.get(i).getItemLeft();
+                    int top = itemList.get(i).getItemTop();
+                    int right = itemList.get(i).getItemRight();
+                    int bottom = itemList.get(i).getItemBottom();
 
                     imageView.layout(left, top, right, bottom);
 
@@ -218,10 +218,10 @@ public class RouteView1 extends ViewGroup {
         if (routeList!=null&&routeList.size()>0){
             for (int i = 0; i <routeList.size() ; i++) {
 
-                int left = routeList.get(i).getLeft();
-                int top = routeList.get(i).getTop();
-                int right = routeList.get(i).getRight();
-                int bottom = routeList.get(i).getBottom();
+                int left = routeList.get(i).getItemLeft();
+                int top = routeList.get(i).getItemTop();
+                int right = routeList.get(i).getItemRight();
+                int bottom = routeList.get(i).getItemBottom();
 
 //                Log.e("xw","left:"+left+" ,top:"+right+" ,right:"+right+" ,bottom:"+bottom);
 
@@ -267,37 +267,37 @@ public class RouteView1 extends ViewGroup {
 
         for (int i = 0; i < 10; i++) {
             RouteBean itemBean = new RouteBean();
-            itemBean.setLeft(2 * i * itemPadding + i * itemWidth);
-            itemBean.setRight(itemBean.getLeft() + itemWidth);
+            itemBean.setItemRight(2 * i * itemPadding + i * itemWidth);
+            itemBean.setItemRight(itemBean.getItemLeft() + itemWidth);
 
             RouteBean routeBean1=new RouteBean();
-            routeBean1.setLeft(itemBean.getRight());
-            routeBean1.setRight(routeBean1.getLeft()+routeSmallWidth);
+            routeBean1.setItemRight(itemBean.getItemRight());
+            routeBean1.setItemRight(routeBean1.getItemLeft()+routeSmallWidth);
 
             RouteBean routeBean2=new RouteBean();
-            routeBean2.setLeft(routeBean1.getLeft()+routePadding);
-            routeBean2.setRight(routeBean2.getLeft()+routeBigWidth);
+            routeBean2.setItemRight(routeBean1.getItemLeft()+routePadding);
+            routeBean2.setItemRight(routeBean2.getItemLeft()+routeBigWidth);
 
             if (i % 2 == 0) {
-                itemBean.setTop(upTop);
-                itemBean.setBottom(upBottom);
+                itemBean.setItemTop(upTop);
+                itemBean.setItemBottom(upBottom);
 
-                routeBean1.setTop(route1DownTop);
-                routeBean1.setBottom(route1DownBottom);
+                routeBean1.setItemTop(route1DownTop);
+                routeBean1.setItemBottom(route1DownBottom);
 
-                routeBean2.setTop(route2DownTop);
-                routeBean2.setBottom(route2DownBottom);
+                routeBean2.setItemTop(route2DownTop);
+                routeBean2.setItemBottom(route2DownBottom);
 
 
             } else {
-                itemBean.setTop(downTop);
-                itemBean.setBottom(downBottom);
+                itemBean.setItemTop(downTop);
+                itemBean.setItemBottom(downBottom);
 
-                routeBean1.setTop(route1UpTop);
-                routeBean1.setBottom(route1UpBottom);
+                routeBean1.setItemTop(route1UpTop);
+                routeBean1.setItemBottom(route1UpBottom);
 
-                routeBean2.setTop(route2UpTop);
-                routeBean2.setBottom(route2UpBottom);
+                routeBean2.setItemTop(route2UpTop);
+                routeBean2.setItemBottom(route2UpBottom);
 
 
             }

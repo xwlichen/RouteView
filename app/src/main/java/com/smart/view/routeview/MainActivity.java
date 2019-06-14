@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
 import android.graphics.Rect;
+import android.media.Image;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,8 +13,12 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     ImageView ivBg;
@@ -83,7 +88,16 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-//        root=findViewById(R.id.root);
+        FlowSideView flowSizeView=findViewById(R.id.flowSizeView);
+        String url1="https://staticcdn.changguwen.com/cms/img/2019123/779a9469-a011-454f-a445-f0b5c764223c-1548229753383.jpg";
+        ImageView ivView=findViewById(R.id.ivView);
+
+        RequestOptions options = new RequestOptions();
+        options.error(R.mipmap.ic_launcher);
+        options.placeholder(R.mipmap.ic_launcher);
+        Glide.with(this).load(url1).apply(options).into(ivView);
+        Glide.with(this).load(url1).apply(options).into(flowSizeView);
+
 //        final FlowSideView flowSideView = new FlowSideView(this);
 //        layoutParams=new ViewGroup.LayoutParams(200,150);
 //
@@ -92,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         RouteView routeView=findViewById(R.id.routeView);
+        routeView.setData(new ArrayList<RouteBean>());
 //        routeView.setVisibility(View.GONE);
 
 
