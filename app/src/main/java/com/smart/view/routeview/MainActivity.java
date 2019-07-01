@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
 //        root.addView(flowSideView);
 
 
-        RouteView routeView=findViewById(R.id.routeView);
+        RouteView0 routeView=findViewById(R.id.routeView);
         routeView.setData(new ArrayList<RouteBean>());
 //        routeView.setVisibility(View.GONE);
 

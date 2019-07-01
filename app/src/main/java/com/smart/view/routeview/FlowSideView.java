@@ -92,6 +92,13 @@ public class FlowSideView extends AppCompatImageView {
 
     }
 
+    public RouteBean getRouteBean() {
+        return routeBean;
+    }
+
+    public void setRouteBean(RouteBean routeBean) {
+        this.routeBean = routeBean;
+    }
 
     protected void init(Context context) {
         this.context = context;
