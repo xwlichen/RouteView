@@ -150,6 +150,8 @@ public class RouteView0 extends FrameLayout {
         mGestureDetector.setIsLongpressEnabled(false);
         scroller = new Scroller(context);
 
+        mFling=new FlingRunnable(context);
+
 
         // 新增部分 start
         ViewConfiguration viewConfiguration = ViewConfiguration.get(context);
@@ -543,12 +545,11 @@ public class RouteView0 extends FrameLayout {
             default:
                 break;
         }
-        if (mIsBeingDragged) {
+//        if (mIsBeingDragged) {
             return mIsBeingDragged;
-
-        } else {
-            return super.onInterceptTouchEvent(ev);
-        }
+//        } else {
+//            return super.onInterceptTouchEvent(ev);
+//        }
     }
 
     private int getPointerIndex(MotionEvent ev, int id) {
@@ -584,7 +585,7 @@ public class RouteView0 extends FrameLayout {
 
         }
 
-//        lastY = (int) ev.getRawY();
+        lastY = (int) ev.getRawY();
 //        lastX = (int) ev.getRawX();
 
     }
@@ -600,8 +601,9 @@ public class RouteView0 extends FrameLayout {
     public void computeScroll() {
 //        super.computeScroll();
         if (scroller.computeScrollOffset()) {
-//            mOffset = scroller.getCurrY();
-//            postInvalidate();
+            mOffset = scroller.getCurrY();
+            scrollTo(scroller.getCurrX(),scroller.getCurrY());
+            postInvalidate();
         } else {
 //            if (isFastScroll) {
 //                int x = mScroller.getCurrY();
@@ -614,41 +616,44 @@ public class RouteView0 extends FrameLayout {
 
 
     private GestureDetector.SimpleOnGestureListener mSimpleOnGestureListener = new GestureDetector.SimpleOnGestureListener() {
+//        @Override
+//        public boolean onDown(MotionEvent e) {
+////            y = (int) e.getRawY();
+////            x = (int) e.getRawX();
+////            scroller.forceFinished(true);
+////            invalidate();
+//            return true;
+//        }
+//
+//        @Override
+//        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+//            int distance = lastY - y;  //上滑 dy<0  distaceY>0
+//            if (distance * distanceY <= 0) {
+//                mOffset += -distanceY;
+//                mOffset = Math.min(mOffset, 0);
+//                mOffset = Math.max(mOffset, -totalHeight + screenHeight - 500);
+//                Log.e("smooth", "distanceY:" + distanceY);
+//                Log.e("smooth", "dY:" + distance);
+//                Log.e("smooth", "mOffset:" + mOffset);
+//                int x = (int) e2.getRawX();
+//                int y = (int) e2.getRawY();
+//                invalidate();
+//            }
+//            lastY = y;
+//            lastX = x;
+//            return true;
+//        }
+
         @Override
-        public boolean onDown(MotionEvent e) {
-//            y = (int) e.getRawY();
-//            x = (int) e.getRawX();
-//            scroller.forceFinished(true);
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocitX, float velocityY) {
+//            if (mOffset >= (-totalHeight + screenHeight)) {
+                scroller.fling(getScrollX(), getScrollY(), 0, (int) velocityY, 0, 0, totalHeight-screenHeight, 0);
+//            }
 //            invalidate();
-            return true;
-        }
-
-        @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            int distance = lastY - y;  //上滑 dy<0  distaceY>0
-            if (distance * distanceY <= 0) {
-                mOffset += -distanceY;
-                mOffset = Math.min(mOffset, 0);
-                mOffset = Math.max(mOffset, -totalHeight + screenHeight - 500);
-                Log.e("smooth", "distanceY:" + distanceY);
-                Log.e("smooth", "dY:" + distance);
-                Log.e("smooth", "mOffset:" + mOffset);
-                int x = (int) e2.getRawX();
-                int y = (int) e2.getRawY();
-                invalidate();
-            }
-            lastY = y;
-            lastX = x;
-            return true;
-        }
-
-        @Override
-        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            if (mOffset >= (-totalHeight + screenHeight)) {
-                scroller.fling(0, (int) mOffset, 0, (int) velocityY, 0, 0, -totalHeight + screenHeight - 500, screenHeight);
-            }
             int x = (int) e2.getRawX();
             int y = (int) e2.getRawY();
+
+
 
             return true;
         }
@@ -659,7 +664,7 @@ public class RouteView0 extends FrameLayout {
 
     public void setData(List<RouteBean> itemList) {
         itemList = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 30; i++) {
             RouteBean routeBean = new RouteBean();
             if (i == 0) {
 
@@ -704,17 +709,17 @@ public class RouteView0 extends FrameLayout {
     private int mMinimumVelocity;
     private int mMaximumVelocity;
     private boolean isFastScroll;
-    private int currentOffset; // 当前偏移
+    private float currentOffset; // 当前偏移
 
     private int space = 30;
 
 
 
-    int scrollY;
+    float scrollY;
 
     int dy;
 
-    int distance;
+    float distance;
 
 
 
@@ -722,7 +727,7 @@ public class RouteView0 extends FrameLayout {
      * 惯性滑动
      */
     public void flingY(int velocityY) {
-        mScroller.fling(getScrollX(), getScrollY(), 0, velocityY, 0, 0, 0, totalHeight - screenHeight);
+        scroller.fling(getScrollX(), getScrollY(), 0, velocityY, 0, 0, 0, totalHeight-screenHeight+firstTopMargin);
         awakenScrollBars(mScroller.getDuration());
         Log.e("xw", "mScroller.getDuration():" + mScroller.getDuration());
         invalidate();
@@ -742,18 +747,22 @@ public class RouteView0 extends FrameLayout {
             mVelocityTracker.addMovement(event);
         }
         int action = event.getAction();
+        float moveY = event.getRawY();
+//        mGestureDetector.onTouchEvent(event);
+
 
         switch (action) {
             case MotionEvent.ACTION_DOWN:
-                mLastY = event.getY();
+                mFling.stop();
+                mLastY = event.getRawY();
                 if (!mScroller.isFinished()) {
                     mScroller.abortAnimation();
                 }
-                y = (int) event.getRawY();
+//                y = (int) event.getRawY();
                 break;
             case MotionEvent.ACTION_MOVE:
+
                 isFastScroll = false;
-                float moveY = event.getY();
                 currentOffset = (int) (moveY - y);
                 scrollY=getScrollY() - currentOffset;
                 if (scrollY<=0){
@@ -761,25 +770,34 @@ public class RouteView0 extends FrameLayout {
                 }else if (scrollY>=totalHeight-screenHeight+firstTopMargin){
                     scrollY=totalHeight-screenHeight+firstTopMargin;
                 }
-                scrollTo(0, scrollY);
+                scrollTo(0, (int) scrollY);
                 distance=scrollY;
                 y = (int) moveY;
+//                invalidate();
                 break;
 
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-                if (scrollY<=0){
-                    scrollY=0;
-                    return true;
-                } if (scrollY>=totalHeight-screenHeight+firstTopMargin){
-                    scrollY=totalHeight-screenHeight+firstTopMargin;
-                    return true;
-                }
                 int initialVelocity = (int) mVelocityTracker.getYVelocity();
+                if ((Math.abs(initialVelocity) > mMinimumVelocity)) {
+                    flingY(-initialVelocity);
+                }
+
+
+//                actionUp();
+
+//                if (scrollY<=0){
+//                    scrollY=0;
+//                    return true;
+//                } if (scrollY>=totalHeight-screenHeight+firstTopMargin){
+//                    scrollY=totalHeight-screenHeight+firstTopMargin;
+//                    return true;
+//                }
+//                int initialVelocity = (int) mVelocityTracker.getYVelocity();
 //                if ((Math.abs(initialVelocity) > mMinimumVelocity)) {
-                    isFastScroll = true;
-//                    flingY(-initialVelocity);
-                    autoVelocityScroll(initialVelocity);
+//                    isFastScroll = true;
+////                    flingY(-initialVelocity);
+//                    autoVelocityScroll(initialVelocity);
 //                } else {
 //                    int y = getScrollY();
 //
@@ -790,7 +808,7 @@ public class RouteView0 extends FrameLayout {
 //                    }
 //                    scrollTo(0, y);
 //                }
-                releaseVelocityTracker();
+//                releaseVelocityTracker();
                 break;
             default:
                 break;
@@ -848,7 +866,7 @@ public class RouteView0 extends FrameLayout {
                 } else if (distance >=totalHeight-screenHeight+firstTopMargin) {
                     distance = totalHeight-screenHeight;
                 }
-                scrollTo(0, distance);
+                scrollTo(0, (int) distance);
 //                invalidate();
             }
 
@@ -865,4 +883,126 @@ public class RouteView0 extends FrameLayout {
     }
 
 
+
+    public void actionUp(){
+        // 计算当前速度， 1000表示每秒像素数等
+        mVelocityTracker.computeCurrentVelocity(1000, mMaximumVelocity);
+
+        // 获取横向速度
+        int velocityY = (int) mVelocityTracker.getXVelocity();
+
+        // 速度要大于最小的速度值，才开始滑动
+        if (Math.abs(velocityY) > mMinimumVelocity) {
+
+            int initY = getScrollY();
+
+            int maxY = (int) (totalHeight - screenHeight);
+            if (maxY > 0) {
+                mFling.start(initY, velocityY, initY, maxY);
+            }
+        }
+
+        if (mVelocityTracker != null) {
+            mVelocityTracker.recycle();
+            mVelocityTracker = null;
+        }
+    }
+
+    FlingRunnable mFling;
+
+    /**
+     * 滚动线程
+     */
+    private class FlingRunnable implements Runnable {
+
+        private Scroller mScroller;
+
+        private int initY;
+        private int minY;
+        private int maxY;
+        private int velocityY;
+
+        FlingRunnable(Context context) {
+            this.mScroller = new Scroller(context, null, false);
+        }
+
+        void start(int initY,
+                   int velocityY,
+                   int minY,
+                   int maxY) {
+            this.initY = initY;
+            this.velocityY = velocityY;
+            this.minY = minY;
+            this.maxY = maxY;
+
+            // 先停止上一次的滚动
+            if (!mScroller.isFinished()) {
+                mScroller.abortAnimation();
+            }
+
+            // 开始 fling
+            mScroller.fling(0, initY, 0,
+                    velocityY, 0,0 , -maxY, 0);
+            post(this);
+        }
+
+        @Override
+        public void run() {
+
+            // 如果已经结束，就不再进行
+            if (!mScroller.computeScrollOffset()) {
+                return;
+            }
+
+            // 计算偏移量
+            int currY = mScroller.getCurrY();
+            int diffy = initY - currY;
+
+            Log.i("xw", "run: [currX: " + currY + "]\n"
+                    + "[diffy: " + diffy + "]\n"
+                    + "[initY: " + initY + "]\n"
+                    + "[minY: " + minY + "]\n"
+                    + "[maxY: " + maxY + "]\n"
+                    + "[velocityY: " + velocityY + "]\n"
+            );
+
+            // 用于记录是否超出边界，如果已经超出边界，则不再进行回调，即使滚动还没有完成
+            boolean isEnd = false;
+
+            if (diffy != 0) {
+
+                // 超出右边界，进行修正
+                if (getScrollX() + diffy >= totalHeight-screenHeight) {
+                    diffy = (int) (totalHeight-screenHeight - getScrollX());
+                    isEnd = true;
+                }
+
+                // 超出左边界，进行修正
+                if (getScrollX() <= 0) {
+                    diffy = -getScrollX();
+                    isEnd = true;
+                }
+
+                if (!mScroller.isFinished()) {
+                    scrollBy(diffy, 0);
+                }
+                initY = currY;
+            }
+
+            if (!isEnd) {
+                post(this);
+            }
+        }
+
+        /**
+         * 进行停止
+         */
+        void stop() {
+            if (!mScroller.isFinished()) {
+                mScroller.abortAnimation();
+            }
+        }
+    }
 }
+
+
